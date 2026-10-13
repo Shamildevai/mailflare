@@ -1,0 +1,61 @@
+interface CloudflareEnv {
+	DB: D1Database;
+	EMAIL: SendEmail;
+	BUCKET: R2Bucket;
+	INBOUND_QUEUE: Queue<import("./src/lib/email/inbound").InboundQueueMessage>;
+	AGENT_QUEUE?: Queue<{ kind: "agent.draft"; jobId: string }>;
+	AI?: Ai;
+	AI_MODEL?: string;
+	AI_BASE_URL?: string;
+	AI_API_KEY?: string;
+	// The outbound queue also carries webhook retries so that scheduled redelivery needs no extra binding.
+	OUTBOUND_QUEUE: Queue<
+		| import("./src/lib/email/send").OutboundQueueMessage
+		| import("./src/lib/email/webhooks").WebhookRetryMessage
+	>;
+	ASSETS: Fetcher;
+	IMAGES: ImagesBinding;
+	WORKER_SELF_REFERENCE: Fetcher;
+	REALTIME: DurableObjectNamespace<
+		import("./src/lib/realtime/hub").RealtimeHub
+	>;
+	LOGIN_RATE_LIMIT?: RateLimit;
+	AGENT_RATE_LIMIT?: RateLimit;
+	/**
+	 * Backblaze B2 storage. When all four are set, B2 replaces the R2 binding for raw mail, attachments, Drive,
+	 * avatars, branding and backups. B2_ENDPOINT is the S3-compatible host, e.g. s3.us-west-004.backblazeb2.com.
+	 */
+	B2_KEY_ID?: string;
+	B2_APPLICATION_KEY?: string;
+	B2_BUCKET?: string;
+	B2_ENDPOINT?: string;
+	/**
+	 * AWS S3 storage, used when B2 is not configured. Credentials fall back to AWS_ACCESS_KEY_ID /
+	 * AWS_SECRET_ACCESS_KEY (read from the environment), so an existing SES key can serve both.
+	 */
+	S3_BUCKET?: string;
+	S3_REGION?: string;
+	S3_ACCESS_KEY_ID?: string;
+	S3_SECRET_ACCESS_KEY?: string;
+	CF_TOKEN?: string;
+	CF_API_KEY?: string;
+	CF_EMAIL?: string;
+	TURNSTILE_SECRET_KEY?: string;
+	GITHUB_UPDATE_TOKEN?: string;
+	GITHUB_UPDATE_REF?: string;
+	GITHUB_UPDATE_REPO?: string;
+	/** "node" when served by the self-hosted runtime in server/; unset on Workers. */
+	MAILFLARE_RUNTIME?: "node";
+	/** Shared secret the Cloudflare email relay signs inbound webhooks with (self-hosted only). */
+	INBOUND_WEBHOOK_SECRET?: string;
+	/** Cloudflare account id, needed for the Email Sending REST API off Workers. */
+	CF_ACCOUNT_ID?: string;
+	/** Public origin of this install (https://mail.example.com) when it sits behind a proxy. */
+	APP_URL?: string;
+	/** VAPID public key (uncompressed P-256 point, URL-safe base64) for Web Push. */
+	VAPID_PUBLIC_KEY?: string;
+	/** VAPID private scalar (URL-safe base64). Keep this secret. */
+	VAPID_PRIVATE_KEY?: string;
+	/** Contact URI for VAPID, e.g. mailto:admin@example.com or https://mail.example.com. */
+	VAPID_SUBJECT?: string;
+}
